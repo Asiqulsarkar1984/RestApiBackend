@@ -8,10 +8,10 @@ import lombok.Generated;
 
 public class Student {
 
-    private int student_id;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int rollN0;
+    private int rollNo;
 
 
 
@@ -37,8 +37,8 @@ public Student(){
     @Override
     public String toString() {
         return "student{" +
-                "student_id=" + student_id +
-                ", rollN0=" + rollN0 +
+
+                ", rollNo=" + rollNo +
                 ", name='" + name + '\'' +
                 ", percentage=" + percentage +
                 ", branch='" + branch + '\'' +
@@ -69,20 +69,13 @@ public Student(){
         this.name = name;
     }
 
-    public int getStudent_id() {
-        return student_id;
+
+    public int getRollNo() {
+        return rollNo;
     }
 
-    public void setStudent_id(int student_id) {
-        this.student_id = student_id;
-    }
-
-    public int getRollN0() {
-        return rollN0;
-    }
-
-    public void setRollN0(int rollN0) {
-        this.rollN0 = rollN0;
+    public void setRollNo(int rollNo) {
+        this.rollNo = rollNo;
     }
 }
 

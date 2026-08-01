@@ -6,7 +6,7 @@ import springBoot.Crud.Operstions.restApi.entity.Student;
 import springBoot.Crud.Operstions.restApi.repository.StudentRepository;
 
 import java.util.List;
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/students")
 public class StudentController {

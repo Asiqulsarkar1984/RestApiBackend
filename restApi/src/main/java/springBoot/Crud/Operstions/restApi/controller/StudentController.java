@@ -1,72 +1,81 @@
 package springBoot.Crud.Operstions.restApi.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springBoot.Crud.Operstions.restApi.entity.Student;
 import springBoot.Crud.Operstions.restApi.repository.StudentRepository;
 
 import java.util.List;
-@CrossOrigin(origins = "*")
+
+@CrossOrigin(origins = "https://wahidx-crud-application.vercel.app")
 @RestController
 @RequestMapping("/students")
 public class StudentController {
 
-    @Autowired
-    StudentRepository repo;
+    private final StudentRepository repo;
+
+    public StudentController(StudentRepository repo) {
+        this.repo = repo;
+    }
 
     @GetMapping
-    public List<Student> getAllStudents() {
-        return repo.findAll();
+    public ResponseEntity<List<Student>> getAllStudents() {
+        return ResponseEntity.ok(repo.findAll());
     }
 
-    // Added curly braces to capture the ID variable
     @GetMapping("/{id}")
-    public Student getStudentById(@PathVariable int id) {
-        return repo.findById(id).orElse(null);
+    public ResponseEntity<Student> getStudentById(@PathVariable int id) {
+        return repo.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Added curly braces and fixed string spacing
+    @PostMapping("/add")
+    public ResponseEntity<Student> addStudent(@RequestBody Student student) {
+        Student saved = repo.save(student);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Student> updateStudent(@PathVariable int id,
+                                                 @RequestBody Student updatedStudent) {
+
+        return repo.findById(id)
+                .map(student -> {
+                    student.setName(updatedStudent.getName());
+                    student.setBranch(updatedStudent.getBranch());
+                    student.setPercentage(updatedStudent.getPercentage());
+
+                    Student saved = repo.save(student);
+                    return ResponseEntity.ok(saved);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
-    public String deleteStudentById(@PathVariable int id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-            return "Student with Roll no " + id + " deleted successfully";
-        } else {
-            return "Student not found";
+    public ResponseEntity<String> deleteStudent(@PathVariable int id) {
+
+        if (!repo.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Student not found");
         }
+
+        repo.deleteById(id);
+
+        return ResponseEntity.ok("Student deleted successfully");
     }
 
     @DeleteMapping("/all")
-    public String deleteAllStudent() {
-        if (repo.count() > 0) {
-            repo.deleteAllInBatch();
-            return "All students deleted successfully";
-        } else {
-            return "No students found to delete";
+    public ResponseEntity<String> deleteAllStudents() {
+
+        if (repo.count() == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No students found");
         }
-    }
 
-    // Changed @PathVariable to @RequestBody to accept JSON payloads
-    @PostMapping("/add")
-    public Student addStudent(@RequestBody Student student) {
-        return repo.save(student);
-    }
+        repo.deleteAll();
 
-    // Mapped the URL to accept the ID variable and match the @PathVariable
-    @PutMapping("/update/{id}")
-    public Student updateStudent(@PathVariable int id, @RequestBody Student updatedStudent) {
-        Student existingStudent = repo.findById(id).orElse(null);
-
-        // Update fields if the student exists
-        if (existingStudent != null) {
-            existingStudent.setName(updatedStudent.getName());
-            existingStudent.setPercentage(updatedStudent.getPercentage());
-            existingStudent.setBranch(updatedStudent.getBranch());
-
-            // Note: We deliberately do NOT update the primary key (rollNo)
-
-            return repo.save(existingStudent);
-        }
-        return null;
+        return ResponseEntity.ok("All students deleted successfully");
     }
 }
